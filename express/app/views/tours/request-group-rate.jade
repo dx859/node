@@ -1,0 +1,20 @@
+extends ../layout
+
+block content
+    h1 Request Group Rate
+    form
+        input(type='hidden', name='referrer')
+        |  Name: 
+        input#fieldName(type='text', name='name')
+        br
+        |  Group size: 
+        input(type='text', name='groupSize')
+        br
+        |  Email: 
+        input(type='email', name='email')
+        br
+        input(type='submit', value='Submit')
+    script.
+        $(document).ready(function(){
+            $('input[name="referrer"]').val(document.referrer);
+        });   

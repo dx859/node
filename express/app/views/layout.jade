@@ -3,9 +3,32 @@ html(lang='en')
     head
         meta(charset='UTF-8')
         meta(name='viewport', content='width=device-width')
-        title= title
+        if title
+            title= title
+        else
+            title blog
         block css
             link(rel='stylesheet', href='/css/style.css')
+            
+        block javascript
+            script(src='/vendor/jquery.js')
 
-  body
-      block content
+body
+    block content
+
+
+    #mocha
+    link(rel='stylesheet', href='/vendor/mocha.css')
+    script(src="/vendor/mocha.js")
+    script(src="/vendor/chai.js")
+    script.
+        mocha.ui('tdd');
+        var assert = chai.assert;
+
+    script(src="/qa/tests-global.js")
+
+    if pageTestScript
+        script(src="#{pageTestScript}")
+
+    script.
+        mocha.run();

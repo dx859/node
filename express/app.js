@@ -10,6 +10,12 @@ app.set('view engine', 'jade');
 
 app.use(express.static(__dirname + '/public'));
 
+// 首先，我们要使用一些中间件来检测在查询字符串 test=1
+app.use(function(req, res, next) {
+    res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
+    next();
+});
+
 
 // router
 app.get('/', function(req, res) {
@@ -26,9 +32,20 @@ app.get('/about', function(req, res) {
     // res.send('About Page');
 
     res.render('about', {
-        title: 'ABOUT'
+        title: 'ABOUT',
+        pageTestScript: '/qa/tests-about.js'
     });
 });
+
+app.get('/tours/hood-river', function(req, res) {
+    res.render('tours/hood-river');
+});
+app.get('/tours/request-group-rate', function(req, res) {
+    res.render('tours/request-group-rate');
+});
+
+
+
 
 /*
 app.get('/about*',function(req,res){
