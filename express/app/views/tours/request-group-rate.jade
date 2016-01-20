@@ -2,8 +2,8 @@ extends ../layout
 
 block content
     h1 Request Group Rate
-    form
-        input(type='hidden', name='referrer')
+    form(method="post" action="http://localhost:3000/tours/request-group-rate")
+        //- input(type='hidden', name='referrer')
         |  Name: 
         input#fieldName(type='text', name='name')
         br

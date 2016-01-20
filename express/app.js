@@ -1,5 +1,5 @@
 var express = require('express');
-
+var bodyParser = require('body-parser');
 var app = express();
 
 // This allows us tooverride the port by setting an environment value before you start the server.
@@ -9,7 +9,10 @@ app.set('views', __dirname + '/app/views');
 app.set('view engine', 'jade');
 
 app.use(express.static(__dirname + '/public'));
-
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
 // 首先，我们要使用一些中间件来检测在查询字符串 test=1
 app.use(function(req, res, next) {
     res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
@@ -44,8 +47,29 @@ app.get('/tours/request-group-rate', function(req, res) {
     res.render('tours/request-group-rate');
 });
 
+app.post('/tours/request-group-rate', function(req, res) {
+    console.log('Received contact from ' + req.body.name + ' <' + req.body.email + '>');
+    try {
+        // save the database
+        console.log(res.xhr)
+        return res.xhr ? 
+            res.render({success:true}) :
+            res.redirect(303, '/thank you');
+    } catch (ex) {
+        return res.xhr ?
+            res.json({error: 'Database error.'}) :
+            res.redirect(300, '/database-error');
+    }
+});
 
+app.get('/api/tours', function(req, res) {
+    var tours = [
+        { id: 0, name: 'Hood River', price: 99.0 },
+        { id: 1, name: 'Oregon Coast', price: 88.0 },
+    ];
 
+    res.json(tours);
+});
 
 /*
 app.get('/about*',function(req,res){
