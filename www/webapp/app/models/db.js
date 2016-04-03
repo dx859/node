@@ -5,6 +5,7 @@ var mongoose = require('mongoose');
  * mongo ds041154.mlab.com:41154/angular-app -u <dbuser> -p <dbpassword>
  */
 var dbURL = 'mongodb://localhost/Loc8r';
+process.env.NODE_ENV = 'production';
 if (process.env.NODE_ENV === 'production') {
     dbURL = 'mongodb://dx859:85941049@23.83.231.244:20045/test';
 }
