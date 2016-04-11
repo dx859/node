@@ -1,0 +1,65 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'E:\\ProgramFiles\\Node\\node.exe',
+1 verbose cli   'C:\\Users\\Administrator\\AppData\\Roaming\\npm\\node_modules\\npm\\bin\\npm-cli.js',
+1 verbose cli   'publish' ]
+2 info using npm@3.7.2
+3 info using node@v4.2.3
+4 verbose publish [ '.' ]
+5 silly cache add args [ '.', null ]
+6 verbose cache add spec .
+7 silly cache add parsed spec Result {
+7 silly cache add   raw: '.',
+7 silly cache add   scope: null,
+7 silly cache add   name: null,
+7 silly cache add   rawSpec: '.',
+7 silly cache add   spec: 'F:\\node\\smash',
+7 silly cache add   type: 'directory' }
+8 verbose addLocalDirectory C:\Users\Administrator\AppData\Roaming\npm-cache\my-colors-project\0.0.1\package.tgz not in flight; packing
+9 verbose correctMkdir C:\Users\Administrator\AppData\Roaming\npm-cache correctMkdir not in flight; initializing
+10 info lifecycle my-colors-project@0.0.1~prepublish: my-colors-project@0.0.1
+11 silly lifecycle my-colors-project@0.0.1~prepublish: no script for prepublish, continuing
+12 verbose tar pack [ 'C:\\Users\\Administrator\\AppData\\Roaming\\npm-cache\\my-colors-project\\0.0.1\\package.tgz',
+12 verbose tar pack   'F:\\node\\smash' ]
+13 verbose tarball C:\Users\Administrator\AppData\Roaming\npm-cache\my-colors-project\0.0.1\package.tgz
+14 verbose folder F:\node\smash
+15 verbose addLocalTarball adding from inside cache C:\Users\Administrator\AppData\Roaming\npm-cache\my-colors-project\0.0.1\package.tgz
+16 verbose correctMkdir C:\Users\Administrator\AppData\Roaming\npm-cache correctMkdir not in flight; initializing
+17 silly cache afterAdd my-colors-project@0.0.1
+18 verbose afterAdd C:\Users\Administrator\AppData\Roaming\npm-cache\my-colors-project\0.0.1\package\package.json not in flight; writing
+19 verbose correctMkdir C:\Users\Administrator\AppData\Roaming\npm-cache correctMkdir not in flight; initializing
+20 verbose afterAdd C:\Users\Administrator\AppData\Roaming\npm-cache\my-colors-project\0.0.1\package\package.json written
+21 silly publish { name: 'my-colors-project',
+21 silly publish   version: '0.0.1',
+21 silly publish   dependencies: { colors: '0.5.0' },
+21 silly publish   readme: 'ERROR: No README data found!',
+21 silly publish   _id: 'my-colors-project@0.0.1',
+21 silly publish   scripts: {},
+21 silly publish   _shasum: 'fe04a924c0fd11692d576f628d5413c87040b269',
+21 silly publish   _from: '.' }
+22 verbose getPublishConfig undefined
+23 silly mapToRegistry name my-colors-project
+24 silly mapToRegistry using default registry
+25 silly mapToRegistry registry https://registry.npmjs.org/
+26 silly mapToRegistry uri https://registry.npmjs.org/my-colors-project
+27 verbose publish registryBase https://registry.npmjs.org/
+28 silly publish uploading C:\Users\Administrator\AppData\Roaming\npm-cache\my-colors-project\0.0.1\package.tgz
+29 verbose stack Error: auth required for publishing
+29 verbose stack     at CachingRegistryClient.publish (C:\Users\Administrator\AppData\Roaming\npm\node_modules\npm\node_modules\npm-registry-client\lib\publish.js:30:14)
+29 verbose stack     at C:\Users\Administrator\AppData\Roaming\npm\node_modules\npm\lib\publish.js:137:14
+29 verbose stack     at mapToRegistry (C:\Users\Administrator\AppData\Roaming\npm\node_modules\npm\lib\utils\map-to-registry.js:55:3)
+29 verbose stack     at publish_ (C:\Users\Administrator\AppData\Roaming\npm\node_modules\npm\lib\publish.js:106:3)
+29 verbose stack     at Array.<anonymous> (C:\Users\Administrator\AppData\Roaming\npm\node_modules\npm\node_modules\slide\lib\bind-actor.js:15:8)
+29 verbose stack     at LOOP (C:\Users\Administrator\AppData\Roaming\npm\node_modules\npm\node_modules\slide\lib\chain.js:15:14)
+29 verbose stack     at LOOP (C:\Users\Administrator\AppData\Roaming\npm\node_modules\npm\node_modules\slide\lib\chain.js:14:28)
+29 verbose stack     at chain (C:\Users\Administrator\AppData\Roaming\npm\node_modules\npm\node_modules\slide\lib\chain.js:20:5)
+29 verbose stack     at C:\Users\Administrator\AppData\Roaming\npm\node_modules\npm\lib\publish.js:72:5
+29 verbose stack     at RES (C:\Users\Administrator\AppData\Roaming\npm\node_modules\npm\node_modules\inflight\inflight.js:23:14)
+30 verbose cwd F:\node\smash
+31 error Windows_NT 6.1.7601
+32 error argv "E:\\ProgramFiles\\Node\\node.exe" "C:\\Users\\Administrator\\AppData\\Roaming\\npm\\node_modules\\npm\\bin\\npm-cli.js" "publish"
+33 error node v4.2.3
+34 error npm  v3.7.2
+35 error code ENEEDAUTH
+36 error need auth auth required for publishing
+37 error need auth You need to authorize this machine using `npm adduser`
+38 verbose exit [ 1, true ]
