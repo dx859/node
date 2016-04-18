@@ -1,8 +1,9 @@
 'use strict'
 var http = require('http')
 
-let url = 'http://www.baidu.com'
-var html = ''
+let url = 'http://www.baidu.com';
+
+var html = '';
 var req = http.request({
     hostname: 'www.baidu.com',
     port: 80,
