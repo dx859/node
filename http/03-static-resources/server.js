@@ -1,42 +1,28 @@
-var http = require('http'),
-    fs = require('fs');
+const http = require('http');
+const fs = require('fs');
+const url = require('url');
+const path = require('path');
+const staticModule = require('./static_module');
 
-function serveStaticFile(res, path, contentType, responseCode) {
-    if (!responseCode) responseCode = 200;
+http.createServer((req, res) => {
+    var pathname = url.parse(req.url).pathname;
 
-    // __dirname will resolve to the directory the executing script resides in
-    fs.readFile(__dirname + path, function(err, data) {
-        if (err) {
-            res.writeHead(500, {'Content-Type': 'text/plain'});
-        } else {
-            res.writeHead(responseCode, {'Content-Type': contentType});
-            res.end(data);
-        }
-    });
-}
-
-http.createServer(function(req, res) {
-
-    var path = req.url.replace(/\/?(?:\?.*)?$/,'').toLowerCase();
-
-    switch(path) {
-        case '':
-            serveStaticFile(res, '/public/home.html', 'text/html');
-            break;
-
-        case '/about':
-            serveStaticFile(res, '/public/about.html', 'text/html');
-            break;
-
-        case '/img/logo': 
-            serveStaticFile(res, '/public/images/logo.jpg', 'image/jpeg')
-
-        default:
-            serveStaticFile(res, '/public/404.html', 'text/html', 404);
-            break;
+    if (pathname == '/favicon.ico') {
+        return;
+    } else if (pathname == '/index' || pathname == '/') {
+        goIndex(res);
+    } else {
+        staticModule.setStaticDir(path.join(__dirname, 'public'));
+        staticModule.getStaticFile(pathname, req, res);
     }
 
 }).listen(3000);
 
+console.log('Server running at http://localhost:3000');
 
-console.log('Server started on localhost:3000');
+function goIndex(res) {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('this is index page');
+}
+
+
