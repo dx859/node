@@ -16,6 +16,7 @@ const CACHE_TIME = 60 * 60 * 24 * 365;
 exports.getStaticFile = (pathname, req, res) => {
     var extname = path.extname(pathname);
     extname = extname ? extname.slice(1) : '';
+    extname = extname.toLowerCase();
     var realPath = path.join(static, pathname);
 
     var mmieType = mmieConf[extname] ? mmieConf[extname] : 'text/plain';
