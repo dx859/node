@@ -1,3 +1,11 @@
 node_modules
-*node_modules
+bower_components
+images
+image
+.tmp
 tmp
+*node_modules
+*.jpg
+*.jpeg
+*.png
+*.gif
