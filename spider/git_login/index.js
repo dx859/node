@@ -7,7 +7,7 @@ const URL = 'https://github.com/'
 const LoginURL = 'https://github.com/login'
 const SessionURL = 'https://github.com/session'
 
-let arguments = process.argv.slice(2)
+let args = process.argv.slice(2)
 
 async function __main() {
   let html = await rp(LoginURL)
@@ -17,13 +17,13 @@ async function __main() {
     commit: 'Sign in',
     utf8: '✓',
     authenticity_token: token,
-    login: arguments[0],
-    password: arguments[1],
+    login: args[0],
+    password: args[1],
   }
   await rp({ uri: SessionURL, method: 'POST', form: postData })
 
   html = await rp(URL)
-
+  
   let startTime = Date.now()
   $ = cheerio.load(html)
   let arr = $('li.public span.repo').map((i, el) => $(el).text()).get()
