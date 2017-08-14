@@ -1,21 +1,10 @@
-require('dotenv').config()
-
-// const connection = mysql.createConnection({
-//   host: process.env.DB_HOST,
-//   user: process.env.DB_USER,
-//   password: process.env.DB_PASS,
-//   database: 'novel'
-// })
-
-
-// let sql = 'SELECT * FROM `novels_test`'
-// connection.query(sql, (error, results) => {
-//   if (error) throw error
-
-//   console.log( results)
-// })
-
-// connection.end()
+require('dotenv').config({path: '../../.env'})
+const http = require('http')
+const request = require('request')
+const { rp } = require('../libs/rp')
+const Iconv  = require('iconv').Iconv
+const fs = require('fs')
+var iconv = require('iconv-lite');
 
 const db = require('../libs/db')({
   host: process.env.DB_HOST,
@@ -25,13 +14,16 @@ const db = require('../libs/db')({
 })
 
 
-async function __main() {
-  
-  const sql = 'SELECT * FROM `novels_test`'
+const url = 'http://www.biquzi.com/0_703/'
 
-  let res = await db.query(sql)
 
-  console.log(res)
-}
+request({
+  url: url,
+  encoding: null
+}, function(err, response, body) {
+  let html = iconv.decode(body,  'gbk')
+  console.log(html)
+})
 
-__main()
+
+// __main()
