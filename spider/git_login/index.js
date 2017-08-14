@@ -7,9 +7,8 @@ const URL = 'https://github.com/'
 const LoginURL = 'https://github.com/login'
 const SessionURL = 'https://github.com/session'
 
-let args = process.argv.slice(2)
 
-async function __main() {
+async function __main(argv) {
   let html = await rp(LoginURL)
   let $ = cheerio.load(html)
   const token = $('input[name=authenticity_token]').val()
@@ -17,8 +16,8 @@ async function __main() {
     commit: 'Sign in',
     utf8: '✓',
     authenticity_token: token,
-    login: args[0],
-    password: args[1],
+    login: argv[0],
+    password: argv[1],
   }
   await rp({ uri: SessionURL, method: 'POST', form: postData })
 
@@ -32,7 +31,7 @@ async function __main() {
 }
 
 
-__main()
+__main(process.argv.slice(2))
 
 
 

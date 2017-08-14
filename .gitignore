@@ -9,3 +9,4 @@ tmp
 *.jpeg
 *.png
 *.gif
+.env
