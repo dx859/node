@@ -19,7 +19,7 @@ class DB {
   query(sql, data) {
     return new Promise((resolve, reject) => {
       if (data == null) {
-        this.conn.query(sql, function (err, results) {
+        this.conn.query(sql, function (err, results, fields) {
           if (err) 
             reject(err)
           else
@@ -27,7 +27,7 @@ class DB {
         })
         
       } else {
-        this.conn.query(sql, data, function (err, results) {
+        this.conn.query(sql, data, function (err, results, fields) {
           if (err) 
             reject(err)
           else
