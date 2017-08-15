@@ -62,10 +62,10 @@ async function getPageInfo(url) {
     let intro = $('#intro p').text()
     let cover_img = urllibs.resolve(host, $('#fmimg img').attr('data-cfsrc'))
 
-    let chapters = $('#list dd a').map((i, el) => {
+    let chapters = $('#list dd a').map((index, el) => {
         let href = urllibs.resolve(host, $(el).attr('href'))
         let title = $(el).text()
-        return href
+        return {title, href, index}
     }).get()
 
     return { name, author, intro, cover_img, chapters }
@@ -78,15 +78,15 @@ async function insertChapter(novelId, websiteId, chapter, chapterSort, content, 
     return insertId
 }
 
-async function getChapter(url) {
+async function getChapter(url, title, index) {
     let buffer = await rp({ url: url, encoding: null })
     let html = iconv.decode(buffer, 'gbk')
 
     let $ = cheerio.load(html, { decodeEntities: false, xmlMode: true })
-    let title = $('.bookname h1').text()
+    title = title ? title : $('.bookname h1').text()
     let content = $('#content').html().replace(/<br\/>/g, '').replace(/&nbsp;/g, ' ')
-
-    return { title, content }
+    console.log(`GET => ${title} ${url}`)
+    return { title, content , url, index}
 }
 
 async function checkUrl(url) {
@@ -95,49 +95,58 @@ async function checkUrl(url) {
     return !!res.length
 }
 
-async function insertChapters(novelId, websiteId, url, chapters) {
+async function insertChapters(novelId, websiteId, chapters) {
     for (let i = 0; i < chapters.length; i++) {
-        let url = chapters[i]
+        let url = chapters[i].href
         console.log('start: ', url)
-        let { title, content } = await getChapter(url)
+        let { title, content } = await getChapter(url, chapters[i].title, i)
         await insertChapter(novelId, websiteId, title, i, content, url)
         console.log('end: ', url)
     }
+    return chapters.length
 }
 
-async function insertConcurrency(novelId, websiteId, url, chapters, max = 5) {
-    let arr = []
+async function getConcurrency(novelId, websiteId, chapters, maxLen=10) {
+    let arr = [], fns = [], res = []
+    for (let i=0; i<chapters.length; i+=maxLen) {
+        arr.push(chapters.slice(i,i+maxLen))
+    }
+
+    for (let i=0; i< arr.length; i++) {
+        let items = await Promise.all(arr[i].map(item => getChapter(item.href, item.title, item.index)))
+        let affectedRows = await insertConcurrency(novelId, websiteId, items)
+        // res = res.concat(items)
+    }
+
+    console.log('GET end...')
+    // return res
+}
+
+async function insertConcurrency(novelId, websiteId, chapters) {
+    let startTime = Date.now()
     let escapeStr = db.conn.escape.bind(db.conn)
-    for (let i = 0; i < chapters.length; i++) {
-
-
-        for (let j = 0; j < max; j++) {
-            arr.push(getChapter(chapters[i]))
-        }
-        let info = await Promise.all(arr)
-        if (i % max === 0 && i !== 0) {
-            let sql = 'INSERT INTO chapters (novels_id, websites_id, chapter, chapter_sort, word_count, content, url) VALUES '
-            for (let j = 0; j < info.length; j++) {
-                let item = info[j]
-                sql += `(${novelId}, ${websiteId}, ${escapeStr(item.title)}, ${i*max+j}, ${item.content.length}, ${escapeStr(item.title)}, ${escapeStr(url)})`
-                if (j !== info.length - 1) {
-                    sql += ','
-                }
-            }
-            await db.query(sql)
+    let sql = 'INSERT INTO chapters (novels_id, websites_id, chapter, chapter_sort, word_count, content, url) VALUES'
+    for (let i=0; i<chapters.length; i++) {
+        let item = chapters[i]
+        sql += `(${escapeStr(novelId)}, ${escapeStr(websiteId)}, ${escapeStr(item.title)}, ${item.index} , ${escapeStr(item.content.length)}, ${escapeStr(item.content)}, ${escapeStr(item.url)})`
+        if (i !== chapters.length -1 ) {
+            sql += ','
         }
     }
+    let {affectedRows} = await db.query(sql)
+    console.log('insert sql: ',Date.now() - startTime, 'ms')
+    return affectedRows
 }
 
 async function __main() {
     let url = 'http://www.biquzi.com/0_703/'
-    url = 'http://www.biquzi.com/0_700/'
+    // url = 'http://www.biquzi.com/0_700/'
     let websiteName = '笔趣阁'
 
-    // let hasUrl = await checkUrl(url)
+    let hasUrl = await checkUrl(url)
     // if (hasUrl) {
     //     console.log(`${url}: 已被爬取`)
-    //     return
+    //     return db.end()
     // } 
     let startTime = Date.now()
     let urlObj = new urllibs.URL(url)
@@ -150,11 +159,14 @@ async function __main() {
     let novelId = await insertNovel(name, author, intro, cover_img)
     let novelWebsiteId = await insertNovelWebsite(novelId, websiteId, url)
 
-    // await insertChapters(chapters)
+    // let length = await insertChapters(novelId, websiteId, url, chapters)
 
-    let info = await insertConcurrency(novelId, websiteId, url, chapters)
+    let info = await getConcurrency(novelId, websiteId, chapters)
+    // let res = await insertConcurrency(novelId, websiteId, info)
 
-    console.log(Date.now() - startTime)
+    console.log('count: ',info)
+    console.log('end: ',Date.now() - startTime, 'ms')
+    db.end()
 }
 
 
