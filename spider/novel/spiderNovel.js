@@ -65,6 +65,7 @@ class SpiderNovel {
                 (chapter, cb) => {
                     this.insertChapter(novelId, websiteId, chapter)
                         .then(res => {
+                            log(`INSERT chapters => ${chapter.title}`)
                             chapter.id = res.insertId
                             cb(null, chapter)
                         })
@@ -98,30 +99,12 @@ class SpiderNovel {
                             chapter.content_id = res.insertId
                             cb(null, chapter)
                         })
-                    // .catch(err => {
-                    //     cb(null, chapter)
-                    // })
+                        .catch(err => {
+                            cb(null, chapter)
+                        })
                 }, (err, res) => {
                     resolve(res)
                 })
-        })
-    }
-
-    /**
-     * 插入章节内容表
-     * @param  {Number}  章节id
-     * @param  {Number}  章节内容
-     * @return {Object}  
-     */
-    insertContent(chapters_id, content) {
-        return new Promise((resolve, reject) => {
-            let sql = `INSERT INTO contents (content, chapters_id) VALUES (?,?)`
-            db.query(sql, [content, chapters_id], (err, res) => {
-                if (err)
-                    reject(err)
-                else
-                    resolve(res)
-            })
         })
     }
 
@@ -134,12 +117,48 @@ class SpiderNovel {
      */
     insertChapter(novelId, websiteId, chapter) {
         return new Promise((resolve, reject) => {
+            db.beginTransaction(err => {
+                if (err) return jre
+            })
             let sql = `INSERT INTO chapters (novels_id, websites_id, title, chapter_index, origin_url) VALUES (?,?,?,?,?)`
             db.query(sql, [novelId, websiteId, chapter.title, chapter.index, chapter.originUrl], (err, res) => {
                 if (err)
                     reject(err)
                 else
                     resolve(res)
+            })
+        })
+    }
+
+    /**
+     * 插入章节内容表
+     * @param  {Number}  章节id
+     * @param  {Number}  章节内容
+     * @return {Object}  
+     */
+    insertContent(chapters_id, content) {
+        return new Promise((resolve, reject) => {
+            db.beginTransaction(err => {
+                if (err) return reject(err)
+                let sql = `INSERT INTO contents (content, chapters_id) VALUES (?,?)`
+                db.query(sql, [content, chapters_id], (err, res) => {
+                    if (err) {
+                        reject(err)
+                    } else {
+                        db.query('UPDATE chapters SET is_spider=1 WHERE id=?', [chapters_id], (err, res) => {
+                            if (err) {
+                                return db.rollback(() => reject(err))
+                            }
+                            db.commit(err => {
+                                if (err) {
+                                    return db.rollback(()=> reject(err))
+                                }
+                                resolve(res)
+                            })
+                        })
+                    }
+                })
+
             })
         })
     }
@@ -239,13 +258,18 @@ class SpiderNovel {
 
     async start() {
         let info = await this.getPage()
+        log(`GET => ${this.url}`)
         let { name, author, intro, cover_img, chapters } = this.parseChapterPage(info)
 
         let websiteId = await this.insertWebsites(this.websiteName, this.host, this.origin)
+        log(`INSERT websites`)
         let novelId = await this.insertNovels(name, author, intro, cover_img)
+        log(`INSERT novels`)
         let novelWebsiteId = await this.insertNovelsWebsites(novelId, websiteId, this.url)
+        log(`INSERT novels_websites`)
 
         chapters = await this.asyncInsertChapters(novelId, websiteId, chapters)
+        log(`INSERT chapters`)
         chapters = await this.asyncInsertContents(chapters)
         db.end()
     }
@@ -253,7 +277,8 @@ class SpiderNovel {
 
 async function main() {
 
-    let url = 'http://www.biquzi.com/0_700/'
+    let url = 'http://www.biquzi.com/0_703/'
+    // url = 'http://www.biquzi.com/0_700/'
     let websiteName = '笔趣阁'
     let a = new SpiderNovel(url, websiteName, 'gbk')
 
