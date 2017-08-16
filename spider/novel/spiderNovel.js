@@ -6,7 +6,7 @@ const asyncLibs = require('async')
 const request = require('request')
 const mysql = require('mysql')
 
-require('dotenv').config({ path: path.resolve(__dirname, '..', '..', '.env') })
+
 
 const db = mysql.createConnection({
     host: process.env.DB_HOST,
@@ -21,12 +21,13 @@ class SpiderNovel {
     /**
      * @param  {String}  小说目录的url
      */
-    constructor(url, websiteName, character = 'utf8') {
+    constructor(url, websiteName = '笔趣阁', character = 'utf8') {
         this.url = url
         this.origin = (new urllibs.URL(url)).origin
         this.host = (new urllibs.URL(url)).host
         this.character = character
         this.websiteName = websiteName
+
     }
 
     /**
@@ -131,7 +132,7 @@ class SpiderNovel {
     }
 
     /**
-     * 插入章节内容表
+     * 插入章节内容表(事务处理)
      * @param  {Number}  章节id
      * @param  {Number}  章节内容
      * @return {Object}  
@@ -275,16 +276,5 @@ class SpiderNovel {
     }
 }
 
-async function main() {
+module.exports = SpiderNovel
 
-    let url = 'http://www.biquzi.com/0_703/'
-    // url = 'http://www.biquzi.com/0_700/'
-    let websiteName = '笔趣阁'
-    let a = new SpiderNovel(url, websiteName, 'gbk')
-
-    let startTime = Date.now()
-    await a.start()
-    log(`end: ${Date.now() - startTime}ms`)
-}
-
-main()

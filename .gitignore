@@ -10,3 +10,4 @@ tmp
 *.png
 *.gif
 .env
+sftp-config.json
