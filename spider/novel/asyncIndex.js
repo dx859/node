@@ -10,12 +10,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '..', '..', '.env') })
 const { rp } = require('../libs/rp')
 const log = console.log.bind(console)
 
-const db = require('../libs/db')({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    database: 'novel_test'
-})
+const db = require('../libs/db')
 
 async function insertWebsite(websiteName, host, origin) {
     try {
@@ -75,7 +70,7 @@ async function getPageInfo(url) {
 
 async function insertChapter(novelId, websiteId, chapter, chapterSort, content, url) {
     let wordCount = content.length
-    let sql = `INSERT INTO chapters (novels_id, websites_id, title, chapter_index, word_count, content, origin_url) VALUES (?,?,?,?,?,?,?)`
+    let sql = `INSERT INTO chapters (novels_id, websites_id, title, chapter_index, word_count, content, origin_url, is_spider) VALUES (?,?,?,?,?,?,?,1)`
     let { insertId } = await db.query(sql, [novelId, websiteId, chapter, chapterSort, wordCount, content, url])
     return insertId
 }
@@ -136,10 +131,10 @@ async function getConcurrency(novelId, websiteId, chapters, maxLen = 10) {
 async function insertConcurrency(novelId, websiteId, chapters) {
     let startTime = Date.now()
     let escapeStr = db.conn.escape.bind(db.conn)
-    let sql = 'INSERT INTO chapters (novels_id, websites_id, title, chapter_index, word_count, content, origin_url) VALUES'
+    let sql = 'INSERT INTO chapters (novels_id, websites_id, title, chapter_index, word_count, content, origin_url, is_spider) VALUES'
     for (let i = 0; i < chapters.length; i++) {
         let item = chapters[i]
-        sql += `(${escapeStr(novelId)}, ${escapeStr(websiteId)}, ${escapeStr(item.title)}, ${item.index} , ${escapeStr(item.content.length)}, ${escapeStr(item.content)}, ${escapeStr(item.originUrl)})`
+        sql += `(${escapeStr(novelId)}, ${escapeStr(websiteId)}, ${escapeStr(item.title)}, ${item.index} , ${escapeStr(item.content.length)}, ${escapeStr(item.content)}, ${escapeStr(item.originUrl)}, 1)`
         if (i !== chapters.length - 1) {
             sql += ','
         }
@@ -166,7 +161,7 @@ function asyncInsert(novelId, websiteId, chapters, limit = 10) {
                     errChapters.push(chapter)
                     cb(null)
                 } else {
-                    let sql = `INSERT INTO chapters (novels_id, websites_id, title, chapter_index, word_count, content, origin_url) VALUES (?,?,?,?,?,?,?)`
+                    let sql = `INSERT INTO chapters (novels_id, websites_id, title, chapter_index, word_count, content, origin_url, is_spider) VALUES (?,?,?,?,?,?,?, 1)`
                     let { content } = parseChapter(body)
                     log(`GET => ${chapter.title} ${chapter.href}`)
                     db.query(sql, [novelId, websiteId, chapter.title, index, content.length, content, chapter.href])
@@ -241,7 +236,7 @@ function parseChapter(body, title) {
 
 async function __main() {
     let url = 'http://www.biquzi.com/0_703/'
-    // url = 'http://www.biquzi.com/0_700/'
+    url = 'http://www.biquzi.com/0_700/'
     let websiteName = '笔趣阁'
 
     let hasUrl = await checkUrl(url)
@@ -261,11 +256,11 @@ async function __main() {
     let novelWebsiteId = await insertNovelWebsite(novelId, websiteId, url)
 
 
-    // let chapters = await asyncGetChapters(catalog)
-    // let affectedRows = await insertConcurrency(novelId, websiteId, chapters)
-    // log('insert rows: ', affectedRows)
+    let chapters = await asyncGetChapters(catalog)
+    let affectedRows = await insertConcurrency(novelId, websiteId, chapters)
+    log('insert rows: ', affectedRows)
 
-    let unlinks = await asyncInsert(novelId, websiteId, catalog)
+    // let unlinks = await asyncInsert(novelId, websiteId, catalog)
 
     console.log('end: ', Date.now() - startTime, 'ms')
     db.end()
