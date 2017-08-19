@@ -20,10 +20,11 @@ class DB {
         return new Promise((resolve, reject) => {
             if (data == null) {
                 this.conn.query(sql, function(err, results, fields) {
-                    if (err)
+                    if (err) 
                         reject(err)
-                    else
+                    else 
                         resolve(results)
+                    
                 })
 
             } else {
@@ -43,8 +44,8 @@ class DB {
 }
 
 module.exports = new DB({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
+    host: process.env.LOCAL_DB_HOST,
+    user: process.env.LOCAL_DB_USER,
+    password: process.env.LOCAL_DB_PASS,
     database: 'novel_test'
 })
