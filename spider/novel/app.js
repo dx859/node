@@ -26,10 +26,9 @@ async function main() {
     // await novelspider.spiderUrls(5)
 
     // await new ChapterSpider(db, 1).spiderUrls(5)
-    for (let i=0; i< 100; i++) {
+    for (let i=0; i< 10; i++) {
         await new ContentSpider(db, 10000).spiderUrls(20)
     }
-
     db.end()
 }
 
