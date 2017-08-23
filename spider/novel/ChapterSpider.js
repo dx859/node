@@ -11,7 +11,7 @@ const log = console.log.bind(console)
 const errlog = path.join(__dirname, 'err.log')
 
 
-class NovelSpider extends Spider {
+class ChapterSpider extends Spider {
     constructor(db, webSiteId) {
         super()
         this.db = db
@@ -72,4 +72,4 @@ class NovelSpider extends Spider {
 
 }
 
-module.exports = NovelSpider
+module.exports = ChapterSpider
