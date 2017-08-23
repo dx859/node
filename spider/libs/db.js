@@ -47,5 +47,5 @@ module.exports = new DB({
     host: process.env.LOCAL_DB_HOST,
     user: process.env.LOCAL_DB_USER,
     password: process.env.LOCAL_DB_PASS,
-    database: 'novel_mirror'
+    database: process.env.LOCAL_DB_NAME,
 })
