@@ -9,9 +9,10 @@ const fs = require('fs')
 
 const NovelSpider = require('./NovelSpider')
 const ChapterSpider = require('./ChapterSpider')
+const TestChapterSpider = require('./TestChapterSpider')
 const ContentSpider = require('./ContentSpider')
 
-require('dotenv').config({ path: path.resolve(__dirname, '..', '..', '.env') })
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') })
 const { rp } = require('../libs/rp')
 const db = require('../libs/db')
 
@@ -26,9 +27,11 @@ async function main() {
     // await novelspider.spiderUrls(5)
 
     // await new ChapterSpider(db, 1).spiderUrls(5)
-    for (let i = 0; i < 10; i++) {
-        await new ContentSpider(db, 10).spiderUrls(20)
-    }
+    // for (let i = 0; i < 10; i++) {
+    //     await new ContentSpider(db, 10).spiderUrls(20)
+    // }
+
+    await new TestChapterSpider(db, 1).spiderUrls(5)
     db.end()
 }
 
