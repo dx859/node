@@ -33,15 +33,16 @@ class Spider {
         return html
     }
 
-    asyncGetPages(limit = 1) {
+    asyncGetPages(limit = 1, urls) {
+        urls = urls ? urls : this.urlCols
         return new Promise((resolve, reject) => {
-            asyncLibs.eachLimit(Array.from(this.urlCols.keys()), limit, (url, cb) => {
+            asyncLibs.eachLimit(Array.from(urls.keys()), limit, (url, cb) => {
                 this.asyncGetPage(url, this.character)
                     .then(html => {
                         let item = this.parsePage(html)
                         this.collections.set(url, item)
-                        item.urlCol = this.urlCols.get(url)
-                        this.urlCols.delete(url)
+                        item.urlCol = urls.get(url)
+                        urls.delete(url)
                         this.afterGetPage(item, url, cb)
                     })
                     .catch(e => {

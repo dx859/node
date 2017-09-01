@@ -1,6 +1,6 @@
 const mysql = require('mysql')
-
-
+const path = require('path')
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') })
 class DB {
     constructor(opts) {
         this.conn = null
