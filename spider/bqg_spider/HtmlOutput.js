@@ -1,0 +1,197 @@
+const asyncLibs = require('async')
+const db = require('../libs/db')
+const UrlManager = require('./UrlManager')
+
+class HtmlOutput {
+  constructor(name, origin) {
+    this.name = name
+    this.origin = origin
+  }
+
+  async init() {
+    let urls = await db.query("SELECT origin_url FROM chapters")
+    let nwUrls = await db.query("SELECT url FROM novels_websites")
+    this.chapterUrls = new Set(urls.map(url => url.origin_url))
+    this.novelWebsiteUrls = new Set(nwUrls.map(url => url.url))
+
+    await this.insertWebsite()
+  }
+
+  async insertWebsite() {
+    let sql = `
+      INSERT INTO websites(name, origin) 
+        SELECT ?, ?
+        FROM DUAL WHERE NOT EXISTS(SELECT id FROM websites WHERE origin=?)`
+    let { insertId } = await db.query(sql, [this.name, this.origin, this.origin])
+
+    if (!insertId) {
+      sql = 'SELECT id FROM websites WHERE origin=?'
+      insertId = (await db.query(sql, [this.origin]))[0].id
+    }
+
+    this.websiteId = insertId
+    return insertId
+  }
+
+
+  pCollectData(url, data) {
+    return new Promise((resolve, reject) => {
+      this.pInsertNovel(data)
+        .then(res => {
+          return this.pInsertNovelWebsite(url)
+        })
+        .then(res => {
+          return this.pInsertChaptersAll(data.chapters)
+        })
+        .then(res => {
+          resolve()
+        })
+        .catch(e => {
+          reject(e)
+        })
+    })
+  }
+
+  pInsertNovel(data) {
+    return new Promise((resolve, reject) => {
+      let sql = "INSERT INTO novels(name, author, cover_img, category_name, intro, last_update) VALUES (?,?,?,?,?,?)"
+      db.query(sql, [data.name, data.author, data.cover_img, data.category_name, data.intro, data.last_update])
+        .then(res => {
+          this.novelId = res.insertId
+          resolve(res.insertId)
+        })
+        .catch(e => {
+          let sql = "SELECT id FROM novels WHERE name=? AND author=?"
+          db.query(sql, [data.name, data.author])
+            .then(res => {
+              this.novelId = res.insertId
+              resolve(res.insertId)
+            })
+            .catch(e => reject(e))
+        })
+    })
+  }
+
+  pInsertNovelWebsite(url) {
+    return new Promise((resolve, reject) => {
+      if (this.novelWebsiteUrls.has(url)) return resolve();
+
+      let sql = "INSERT INTO novels_websites(novels_id, websites_id, url) VALUES(?,?,?)"
+      db.query(sql, [this.novelId, this.websiteId, url])
+        .then(res => this.novelWebsiteUrls.add(url))
+        .catch(e => reject(e))
+
+    })
+  }
+
+  pInsertChaptersAll(chapters) {
+    return new Promise((resolve, reject) => {
+      let sql = 'INSERT INTO chapters(novels_id, websites_id, title, chapter_index, origin_url) VALUES '
+      let novelId = this.novelId,
+        websiteId = this.websiteId;
+
+      chapters = chapters.filter(chapter => !this.chapterUrls.has(chapter.originUrl))
+      if (chapters.length === 0) return resolve();
+      chapters.forEach((chapter, index, array) => {
+        sql += `(${novelId}, ${websiteId}, ${db.conn.escape(chapter.title)}, ${chapter.index}, ${db.conn.escape(chapter.originUrl)})`
+        if (index < array.length - 1) {
+          sql += ','
+        }
+      })
+
+      db.query(sql).
+        then(res => resolve())
+        .catch(e => reject(e))
+    })
+  }
+
+  async collectData(url, data) {
+    await this.insertNovel(data)
+    await this.insertNovelWebsite(url)
+    await this.insertChaptersAll(data.chapters)
+  }
+
+  async insertNovel(data) {
+    let id = 0
+    try {
+      let sql = "INSERT INTO novels(name, author, cover_img, category_name, intro, last_update) VALUES (?,?,?,?,?,?)"
+      id = (await db.query(sql, [data.name, data.author, data.cover_img, data.category_name, data.intro, data.last_update])).insertId
+    } catch (e) {
+      let sql = "SELECT id FROM novels WHERE name=? AND author=?"
+      id = (await db.query(sql, [data.name, data.author]))[0].id
+    }
+    this.novelId = id
+    return id
+  }
+
+  async insertNovelWebsite(url) {
+    if (this.novelWebsiteUrls.has(url)) return
+    try {
+      let sql = "INSERT INTO novels_websites(novels_id, websites_id, url) VALUES(?,?,?)"
+      await db.query(sql, [this.novelId, this.websiteId, url])
+      this.novelWebsiteUrls.add(url)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async insertChaptersAll(chapters) {
+    let sql = 'INSERT INTO chapters(novels_id, websites_id, title, chapter_index, origin_url) VALUES '
+    let novelId = this.novelId,
+      websiteId = this.websiteId;
+
+    chapters = chapters.filter(chapter => !this.chapterUrls.has(chapter.originUrl))
+    if (chapters.length === 0) return;
+    chapters.forEach((chapter, index, array) => {
+      sql += `(${novelId}, ${websiteId}, ${db.conn.escape(chapter.title)}, ${chapter.index}, ${db.conn.escape(chapter.originUrl)})`
+      if (index < array.length - 1) {
+        sql += ','
+      }
+    })
+
+    await db.query(sql)
+  }
+
+  async insertChapters(chapters) {
+
+    let newChapters = [],
+      index = 0,
+      len = 1000
+
+    while (index < chapters.length) {
+      newChapters.push(chapters.slice(index, index += len))
+    }
+
+    for (let i = 0; i < newChapters.length; i++) {
+      await this.pInsertChapters(newChapters[i])
+    }
+  }
+
+  pInsertChapters(chapters) {
+    return new Promise((resolve, reject) => {
+      asyncLibs.eachLimit(chapters, 10, (chapter, cb) => {
+        if (this.chapterUrls.has(chapter.originUrl)) {
+          cb(null)
+        } else {
+          this.insertChapter(this.novelId, this.websiteId, chapter, cb)
+        }
+      }, (err) => resolve())
+
+    })
+  }
+
+  insertChapter(novelId, websiteId, chapter, cb) {
+    let sql = `INSERT INTO chapters(novels_id, websites_id, title, chapter_index, origin_url) VALUES (?,?,?,?,?)`
+    db.query(sql, [novelId, websiteId, chapter.title, chapter.index, chapter.originUrl])
+      .then(res => {
+        this.urls.add(chapter.originUrl)
+        cb(null)
+      })
+      .catch(e => {
+        cb(null)
+      })
+
+  }
+}
+
+module.exports = HtmlOutput
