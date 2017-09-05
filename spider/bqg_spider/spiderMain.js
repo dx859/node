@@ -48,10 +48,11 @@ class SpiderMain {
         
       } catch(e) {
         log(`ERROR=>${url}`)
-        fs.appendFileSync(path.join(__dirname, 'error.log'), logstr+'\n')
+        fs.appendFileSync(path.join(__dirname, 'error.log'), String(e) + '\n')
         this.urlManager.addErrUrl(url)
       }
-      
+      log(`men=>${Number(process.memoryUsage().rss/(1024*1024)).toFixed(2)}M | ${this.urlManager.newUrls.size} ${this.urlManager.oldUrls.size}`)
+    
       i++
       if (i >= 1000) break
     }

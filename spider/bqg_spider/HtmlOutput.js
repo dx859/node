@@ -103,19 +103,6 @@ class HtmlOutput {
     }
   }
 
-  pInsertChapters(chapters) {
-    return new Promise((resolve, reject) => {
-      asyncLibs.eachLimit(chapters, 10, (chapter, cb) => {
-        if (this.chapterUrls.has(chapter.originUrl)) {
-          cb(null)
-        } else {
-          this.insertChapter(this.novelId, this.websiteId, chapter, cb)
-        }
-      }, (err) => resolve())
-
-    })
-  }
-
   insertChapter(novelId, websiteId, chapter, cb) {
     let sql = `INSERT INTO chapters(novels_id, websites_id, title, chapter_index, origin_url) VALUES (?,?,?,?,?)`
     db.query(sql, [novelId, websiteId, chapter.title, chapter.index, chapter.originUrl])
