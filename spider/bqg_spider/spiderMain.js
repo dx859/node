@@ -21,7 +21,7 @@ class SpiderMain {
     await this.htmlOutput.init()
 
     if (this.urlManager.newUrls.size === 0) {
-      accessUrls = await this.htmlOutput.getAccessUrls()
+      let accessUrls = await this.htmlOutput.getAccessUrls()
       this.urlManager.addNewUrls(accessUrls)
     }
 
@@ -43,7 +43,8 @@ class SpiderMain {
         fs.appendFileSync(path.join(__dirname, 'craw.log'), logstr+'\n')
         
       } catch(e) {
-        console.error(e)
+        log(`ERROR=>${url}`)
+        fs.appendFileSync(path.join(__dirname, 'error.log'), logstr+'\n')
         this.urlManager.addErrUrl(url)
       }
       

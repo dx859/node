@@ -21,7 +21,7 @@ class HtmlOutput {
   async getAccessUrls() {
     let sql = "SELECT url FROM novels_websites"
     let objs = await db.query(sql)
-    return objs.map(obj=>obj.url)
+    return objs.map(obj => obj.url)
   }
 
   async insertWebsite() {
@@ -48,17 +48,14 @@ class HtmlOutput {
 
   async insertNovel(data) {
     let id = 0
-    try {
-      let sql = `INSERT INTO novels(name, author, cover_img, category_name, intro, last_update) 
+
+    let sql = `INSERT INTO novels(name, author, cover_img, category_name, intro, last_update) 
             SELECT ?, ?, ?, ?, ?, ? FROM DUAL 
             WHERE NOT EXISTS(SELECT id FROM novels WHERE name=? and author=?)`
-      id = (await db.query(sql, [data.name, data.author, data.cover_img, data.category_name, data.intro, data.last_update, data.name, data.author])).insertId
-      if (!id) {
-        sql = "SELECT id FROM novels WHERE name=? AND author=?"
-        id = (await db.query(sql, [data.name, data.author]))[0].id
-      }
-    } catch (e) {
-      console.log(e)
+    id = (await db.query(sql, [data.name, data.author, data.cover_img, data.category_name, data.intro, data.last_update, data.name, data.author])).insertId
+    if (!id) {
+      sql = "SELECT id FROM novels WHERE name=? AND author=?"
+      id = (await db.query(sql, [data.name, data.author]))[0].id
     }
 
     this.novelId = id
@@ -67,13 +64,11 @@ class HtmlOutput {
 
   async insertNovelWebsite(url) {
     if (this.novelWebsiteUrls.has(url)) return
-    try {
-      let sql = "INSERT INTO novels_websites(novels_id, websites_id, url) VALUES(?,?,?)"
-      await db.query(sql, [this.novelId, this.websiteId, url])
-      this.novelWebsiteUrls.add(url)
-    } catch (e) {
-      console.log(e)
-    }
+
+    let sql = "INSERT INTO novels_websites(novels_id, websites_id, url) VALUES(?,?,?)"
+    await db.query(sql, [this.novelId, this.websiteId, url])
+    this.novelWebsiteUrls.add(url)
+
   }
 
   async insertChaptersAll(chapters) {
