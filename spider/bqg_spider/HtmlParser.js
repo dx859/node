@@ -25,6 +25,12 @@ class HtmlParser {
 
     return { newData: { name, author, category_name, intro, cover_img, last_update, chapters }, newUrls }
   }
+
+  parseContent(html) {
+    let $ = cheerio.load(html, { decodeEntities: false, xmlMode: true })
+    let content = $('#content').html().replace(/(^\s*)|(\s*$)/g, '').replace(/<br\/>/g, '').replace(/&nbsp;/g, ' ')
+    return content
+  }
 }
 
 module.exports = HtmlParser

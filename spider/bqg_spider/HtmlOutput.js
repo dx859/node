@@ -7,6 +7,20 @@ class HtmlOutput {
   constructor(name, origin) {
     this.name = name
     this.origin = origin
+    this.chapterUrls = new Set()
+    this.novelWebsiteUrls = new Set()
+    this.contentUrls = new Set()
+  }
+
+  async initContent() {
+    let sql = `
+      SELECT c.id, c.origin_url FROM chapters c 
+        LEFT JOIN contents con ON c.id=con.chapters_id
+        WHERE con.id IS NULL
+        LIMIT 10000`
+    let urls = await db.query(sql)
+
+    return urls.map(url => ([url.origin_url, url.id]))
   }
 
   async init() {
@@ -41,9 +55,10 @@ class HtmlOutput {
   }
 
   async collectData(url, data) {
-    await this.insertNovel(data)
+    let id = await this.insertNovel(data)
     await this.insertNovelWebsite(url)
     await this.insertChaptersAll(data.chapters)
+    return id
   }
 
   async insertNovel(data) {
@@ -75,7 +90,6 @@ class HtmlOutput {
     let sql = 'INSERT INTO chapters(novels_id, websites_id, title, chapter_index, origin_url) VALUES '
     let novelId = this.novelId,
       websiteId = this.websiteId;
-
     chapters = chapters.filter(chapter => !this.chapterUrls.has(chapter.originUrl))
     if (chapters.length === 0) return;
     chapters.forEach((chapter, index, array) => {
@@ -86,6 +100,9 @@ class HtmlOutput {
     })
 
     await db.query(sql)
+    chapters.forEach(chapter => {
+      this.chapterUrls.add(chapter.originUrl)
+    })
   }
 
   async insertChapters(chapters) {
@@ -101,6 +118,11 @@ class HtmlOutput {
     for (let i = 0; i < newChapters.length; i++) {
       await this.pInsertChapters(newChapters[i])
     }
+  }
+
+  async saveContent(content, id) {
+    let sql = `INSERT INTO contents (content, chapters_id) VALUES (?,?)`
+    await db.query(sql, [content, id])
   }
 
   insertChapter(novelId, websiteId, chapter, cb) {

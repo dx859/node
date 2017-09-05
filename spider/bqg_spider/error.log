@@ -19,3 +19,10 @@ Error: ESOCKETTIMEDOUT
 Error: ESOCKETTIMEDOUT
 Error: ETIMEDOUT
 Error: ESOCKETTIMEDOUT
+Error: ER_DATA_TOO_LONG: Data too long for column 'intro' at row 1
+Error: ER_DATA_TOO_LONG: Data too long for column 'intro' at row 1
+Error: ER_DATA_TOO_LONG: Data too long for column 'title' at row 11
+Error: ER_DATA_TOO_LONG: Data too long for column 'intro' at row 1
+Error: ER_DATA_TOO_LONG: Data too long for column 'title' at row 11
+Error: ER_DATA_TOO_LONG: Data too long for column 'intro' at row 1
+Error: ER_DATA_TOO_LONG: Data too long for column 'title' at row 11

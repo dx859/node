@@ -12,7 +12,7 @@ class UrlManager {
   addNewUrl(url) {
     if (url === undefined)
       return
-    if (!this.oldUrls.has(url))
+    if (!this.oldUrls.has(url) && !this.errUrls.has(url))
       this.newUrls.add(url)
   }
 

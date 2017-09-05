@@ -14,3 +14,4 @@ sftp-config.json
 spider/bqg_spider/url_data
 spider/bqg_spider/craw.log
 spider/sftp-config.json
+spider/bqg_spider/error.log

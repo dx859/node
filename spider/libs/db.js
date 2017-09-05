@@ -44,9 +44,9 @@ class DB {
 }
 
 module.exports = new DB({
-    host: process.env.LOCAL_DB_HOST || '127.0.0.1',
-    port: process.env.LOCAL_DB_PORT || 3306,
-    user: process.env.LOCAL_DB_USER || 'root',
-    password: process.env.LOCAL_DB_PASS || '',
-    database: process.env.LOCAL_DB_NAME || 'novel',
+    host: process.env.DB_HOST || '127.0.0.1',
+    port: process.env.DB_PORT || 3306,
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASS || '',
+    database: process.env.DB_NAME || 'novel',
 })
