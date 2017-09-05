@@ -21,8 +21,8 @@ class SpiderMain {
     await this.htmlOutput.init()
 
     if (this.urlManager.newUrls.size === 0) {
-      accessUrl = await this.htmlOutput.getAccessUrl()
-      this.urlManager.addNewUrl(accessUrl)
+      accessUrls = await this.htmlOutput.getAccessUrls()
+      this.urlManager.addNewUrls(accessUrls)
     }
 
     let i = 0

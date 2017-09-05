@@ -18,10 +18,10 @@ class HtmlOutput {
     await this.insertWebsite()
   }
 
-  async getAccessUrl() {
-    let sql = "SELECT url FROM novels_websites ORDER BY id DESC Limit 1"
-    let [{url}] = await db.query(sql)
-    return url
+  async getAccessUrls() {
+    let sql = "SELECT url FROM novels_websites"
+    let objs = await db.query(sql)
+    return objs.map(obj=>obj.url)
   }
 
   async insertWebsite() {
