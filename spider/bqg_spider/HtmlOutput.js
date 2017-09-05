@@ -1,6 +1,7 @@
 const asyncLibs = require('async')
 const db = require('../libs/db')
 const UrlManager = require('./UrlManager')
+const log = console.log.bind(console)
 
 class HtmlOutput {
   constructor(name, origin) {
@@ -17,11 +18,17 @@ class HtmlOutput {
     await this.insertWebsite()
   }
 
+  async getAccessUrl() {
+    let sql = "SELECT url FROM novels_websites ORDER BY id DESC Limit 1"
+    let [{url}] = await db.query(sql)
+    return url
+  }
+
   async insertWebsite() {
     let sql = `
       INSERT INTO websites(name, origin) 
-        SELECT ?, ?
-        FROM DUAL WHERE NOT EXISTS(SELECT id FROM websites WHERE origin=?)`
+        SELECT ?, ? FROM DUAL 
+        WHERE NOT EXISTS(SELECT id FROM websites WHERE origin=?)`
     let { insertId } = await db.query(sql, [this.name, this.origin, this.origin])
 
     if (!insertId) {
@@ -33,78 +40,6 @@ class HtmlOutput {
     return insertId
   }
 
-
-  pCollectData(url, data) {
-    return new Promise((resolve, reject) => {
-      this.pInsertNovel(data)
-        .then(res => {
-          return this.pInsertNovelWebsite(url)
-        })
-        .then(res => {
-          return this.pInsertChaptersAll(data.chapters)
-        })
-        .then(res => {
-          resolve()
-        })
-        .catch(e => {
-          reject(e)
-        })
-    })
-  }
-
-  pInsertNovel(data) {
-    return new Promise((resolve, reject) => {
-      let sql = "INSERT INTO novels(name, author, cover_img, category_name, intro, last_update) VALUES (?,?,?,?,?,?)"
-      db.query(sql, [data.name, data.author, data.cover_img, data.category_name, data.intro, data.last_update])
-        .then(res => {
-          this.novelId = res.insertId
-          resolve(res.insertId)
-        })
-        .catch(e => {
-          let sql = "SELECT id FROM novels WHERE name=? AND author=?"
-          db.query(sql, [data.name, data.author])
-            .then(res => {
-              this.novelId = res.insertId
-              resolve(res.insertId)
-            })
-            .catch(e => reject(e))
-        })
-    })
-  }
-
-  pInsertNovelWebsite(url) {
-    return new Promise((resolve, reject) => {
-      if (this.novelWebsiteUrls.has(url)) return resolve();
-
-      let sql = "INSERT INTO novels_websites(novels_id, websites_id, url) VALUES(?,?,?)"
-      db.query(sql, [this.novelId, this.websiteId, url])
-        .then(res => this.novelWebsiteUrls.add(url))
-        .catch(e => reject(e))
-
-    })
-  }
-
-  pInsertChaptersAll(chapters) {
-    return new Promise((resolve, reject) => {
-      let sql = 'INSERT INTO chapters(novels_id, websites_id, title, chapter_index, origin_url) VALUES '
-      let novelId = this.novelId,
-        websiteId = this.websiteId;
-
-      chapters = chapters.filter(chapter => !this.chapterUrls.has(chapter.originUrl))
-      if (chapters.length === 0) return resolve();
-      chapters.forEach((chapter, index, array) => {
-        sql += `(${novelId}, ${websiteId}, ${db.conn.escape(chapter.title)}, ${chapter.index}, ${db.conn.escape(chapter.originUrl)})`
-        if (index < array.length - 1) {
-          sql += ','
-        }
-      })
-
-      db.query(sql).
-        then(res => resolve())
-        .catch(e => reject(e))
-    })
-  }
-
   async collectData(url, data) {
     await this.insertNovel(data)
     await this.insertNovelWebsite(url)
@@ -114,12 +49,18 @@ class HtmlOutput {
   async insertNovel(data) {
     let id = 0
     try {
-      let sql = "INSERT INTO novels(name, author, cover_img, category_name, intro, last_update) VALUES (?,?,?,?,?,?)"
-      id = (await db.query(sql, [data.name, data.author, data.cover_img, data.category_name, data.intro, data.last_update])).insertId
+      let sql = `INSERT INTO novels(name, author, cover_img, category_name, intro, last_update) 
+            SELECT ?, ?, ?, ?, ?, ? FROM DUAL 
+            WHERE NOT EXISTS(SELECT id FROM novels WHERE name=? and author=?)`
+      id = (await db.query(sql, [data.name, data.author, data.cover_img, data.category_name, data.intro, data.last_update, data.name, data.author])).insertId
+      if (!id) {
+        sql = "SELECT id FROM novels WHERE name=? AND author=?"
+        id = (await db.query(sql, [data.name, data.author]))[0].id
+      }
     } catch (e) {
-      let sql = "SELECT id FROM novels WHERE name=? AND author=?"
-      id = (await db.query(sql, [data.name, data.author]))[0].id
+      console.log(e)
     }
+
     this.novelId = id
     return id
   }
