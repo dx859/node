@@ -21,8 +21,12 @@ class SpiderMain {
     await this.htmlOutput.init()
 
     if (this.urlManager.newUrls.size === 0) {
-      accessUrls = await this.htmlOutput.getAccessUrls()
-      this.urlManager.addNewUrls(accessUrls)
+      if (accessUrl) 
+        accessUrl = [accessUrl]
+      else      
+        accessUrl = await this.htmlOutput.getAccessUrls()
+
+      this.urlManager.addNewUrls(accessUrl)
     }
 
     let i = 0
@@ -61,7 +65,7 @@ class SpiderMain {
 async function __main() {
   let url = 'http://www.biquzi.com/4_4965/'
   let spiderMain = new SpiderMain
-  await spiderMain.craw(url)
+  await spiderMain.craw()
 }
 
 module.parent === null && __main()
