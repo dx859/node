@@ -48,7 +48,7 @@ class SpiderMain {
       }
       
       i++
-      if (i >= 20) break
+      if (i >= 1000) break
     }
 
     db.end()
