@@ -36,7 +36,6 @@ class NovelSpider extends Spider {
     }
 
     afterGetPageError(err, cb) {
-        log(err)
         cb()
     }
 
