@@ -10,7 +10,7 @@ exports.rp = function(arg) {
             if (err) {
                 reject(err)
             } else {
-                if (response.statusCode === 200)
+                if (response.statusCode >= 200 && response.statusCode <400)
                     resolve(body)
                 else
                     reject(`获取页面失败，statusCode：${response.statusCode}`)

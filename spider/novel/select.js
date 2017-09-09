@@ -5,15 +5,6 @@ const { rp } = require('../libs/rp')
 
 const db = require('../libs/db')
 
-// let opts = {
-//     host: process.env.DB_HOST,
-//     user: process.env.DB_USER,
-//     password: process.env.DB_PASS,
-//     database: 'novel_test'
-// }
-// db.configure(opts)
-// console.log(opts)
-
 async function __main() {
     // 获取总字数
 
