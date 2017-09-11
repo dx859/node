@@ -31,7 +31,7 @@ class SpiderMain {
         log(`craw=>${url}`)
       } catch(e) {
         errUrls.add(url)
-        fs.appendFileSync(path.join(__dirname, 'err_content.log'), `${url}:${String(e)}`)
+        fs.appendFileSync(path.join(__dirname, 'err_content.log'), `${url}:${String(e)}\n`)
       }
       urls.delete(url)
 

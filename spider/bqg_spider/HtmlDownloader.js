@@ -4,7 +4,7 @@ const iconv = require('iconv-lite')
 class HtmlDownloader {
   download(url, character='utf8') {
     return new Promise((resolve, reject) => {
-      request({ url: url, encoding: null, timeout: 2000 }, (err, res, body) => {
+      request({ url: url, encoding: null, timeout: 5000 }, (err, res, body) => {
         if (err) {
           console.log(err)
           return reject(err)
